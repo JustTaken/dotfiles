@@ -1,0 +1,36 @@
+window:
+  padding:
+    x: 0
+    y: 0
+
+  dynamic_padding: false
+  opacity: 1.0
+
+font:
+  normal:
+    family: UbuntuMono Nerd Font
+    style: Light
+  bold:
+    family: UbuntuMono Nerd Font
+    style: Medium
+  italic:
+    family: UbuntuMono Nerd Font
+    style: "Light Italic"
+  size: 18.0
+  offset:
+    x: 0
+    y: 0
+  glyph_offset:
+    x: 0
+    y: 0
+draw_bold_text_with_bright_colors: false
+custom_cursor_colors: true
+
+colors:
+  primary:
+    background: '0xf6fbd6'
+    foreground: '0x4d4d4c'
+  cursor:
+    text: '0xffffff'
+    cursor: '0x4d4d4c'
+
