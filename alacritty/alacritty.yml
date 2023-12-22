@@ -28,8 +28,8 @@ custom_cursor_colors: true
 
 colors:
   primary:
-    background: '0xf6fbd6'
-    foreground: '0x4d4d4c'
+    background: '0x1D1D1D'
+    foreground: '0xDEDDDA'
   cursor:
     text: '0xffffff'
     cursor: '0x4d4d4c'

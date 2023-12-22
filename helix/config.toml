@@ -1,4 +1,4 @@
-theme = "bogster_light"
+theme = "adwaita-dark"
 
 [editor]
 gutters = ["diagnostics", "spacer"]
@@ -12,7 +12,7 @@ normal = "block"
 select = "block"
 
 [editor.statusline]
-left = ["mode", "spinner", "file-name"]
+left = ["mode", "spinner", "file-name", "file-modification-indicator"]
 right = ["diagnostics", "position"]
 mode.normal = "NORMAL"
 mode.insert = "INSERT"
@@ -27,6 +27,13 @@ space = "·"
 [editor.file-picker]
 hidden = false
 
+[keys.normal]
+X = "extend_line_above"
+C-u = ["move_visual_line_up", "move_visual_line_up", "move_visual_line_up", "move_visual_line_up", "move_visual_line_up", "move_visual_line_up", "move_visual_line_up", "move_visual_line_up", "move_visual_line_up", "move_visual_line_up"]
+C-d = ["move_visual_line_down", "move_visual_line_down", "move_visual_line_down", "move_visual_line_down", "move_visual_line_down", "move_visual_line_down", "move_visual_line_down", "move_visual_line_down", "move_visual_line_down", "move_visual_line_down"]
+"{" = ["goto_prev_paragraph", "move_visual_line_up", "collapse_selection"]
+"}" = ["goto_next_paragraph", "collapse_selection"]
+ 
 [keys.insert]
 C-x = "normal_mode"
 C-space = "completion"
