@@ -1,4 +1,4 @@
-theme = "adwaita-dark"
+theme = "snazzy"
 
 [editor]
 gutters = ["diagnostics", "spacer"]
@@ -14,9 +14,9 @@ select = "block"
 [editor.statusline]
 left = ["mode", "spinner", "file-name", "file-modification-indicator"]
 right = ["diagnostics", "position"]
-mode.normal = "NORMAL"
-mode.insert = "INSERT"
-mode.select = "SELECT"
+mode.normal = "NOR"
+mode.insert = "INS"
+mode.select = "SEL"
 
 [editor.whitespace.render]
 space = "all"
