@@ -1,0 +1,17 @@
+* What to change
+| face                         | color            |
+| :background                  | ui.background.bg |
+| :foreground                  | variable         |
+| font-lock-builtin-face       | namespace        |
+| font-lock-type-face          | type             |
+| font-lock-variable-name-face | variable         |
+| font-lock-punctuation-face   | punctuation      |
+| font-lock-function-name-face | function         |
+| default                      | variable         |
+| font-lock-string-face        | string           |
+| font-lock-constant-face      | constant         |
+| font-lock-keyword-face       | keyword          |
+| font-lock-operator-face      | operator         |
+| mode-line foreground         | statusline.fg    |
+| mode-line background         | statusline.bg    |
+| region                       | ui.selection.bg  |

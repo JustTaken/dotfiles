@@ -1,0 +1,268 @@
+#+STARTUP: overview
+* Pre Loading
+** Adds
+#+begin_src emacs-lisp
+  (add-to-list 'load-path (expand-file-name "extra" user-emacs-directory))
+  (add-to-list 'custom-theme-load-path (expand-file-name "themes" user-emacs-directory))
+  (require 'dired+)
+  (require 'zig-mode)
+
+  (add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.vert\\'" . c-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.frag\\'" . c-ts-mode))
+
+  (add-hook 'eglot-managed-mode-hook
+            (lambda ()
+              (define-key eglot-mode-map (kbd "C-<return>") 'completion-at-point)
+              (eglot-inlay-hints-mode -1)))
+
+  (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
+  (add-hook 'shell-mode-hook (lambda () (setq mode-line-format nil)))
+  (add-hook 'term-mode-hook (lambda () (setq-local scroll-margin 0) (setq mode-line-format nil)))
+  (setq before-save-hook '(delete-trailing-whitespace))
+
+  (dolist (mode-hook '(java-ts-mode-hook rust-ts-mode-hook c-ts-mode-hook cpp-ts-mode-hook org-mode-hook emacs-lisp-mode-hook js-ts-mode-hook))
+    (add-hook mode-hook (lambda ()
+                          (whitespace-mode 1)
+                          (hi-lock-face-phrase-buffer "TODO" 'org-todo))))
+#+end_src
+** Defs
+#+BEGIN_SRC emacs-lisp
+  (defface insert-mode-face
+    '((t :background "DodgerBlue4" :foreground "floral white" :inherit bold))
+    "Line and colum number display in mode line"
+    :group 'fon-lock-faces)
+
+  (defface selection-mode-face
+    '((t :foreground "floral white" :background "LightPink3" :inherit bold))
+    "Line and colum number display in mode line"
+    :group 'fon-lock-faces)
+
+  (defcustom fonts
+    '(("UbuntuMono" . "UbuntuMono Nerd Font")
+      ("JetBrainsMono" . "JetBrainsMono"))
+    "Custom fonts to choose from"
+    :type '((string . string)))
+
+  (setq fringe-sides 2)
+#+END_SRC
+** Functions
+#+BEGIN_SRC emacs-lisp
+  (defun simple-mode-line-render (left right)
+    (let ((available-width (+ (- (window-width) (length left) 1) fringe-sides)))
+      (format (format "%%s %%%ds" available-width) left right)))
+
+  (defun display-startup-echo-area-message ()
+    (message ""))
+
+  (defun font (name height)
+    "Choose the font name to use"
+    (dolist (f fonts)
+      (if (string= name (car f))
+          (set-face-attribute 'default nil :font (cdr f) :height height :weight 'regular))))
+
+  (defun load-custom-theme (base &optional theme)
+    "Override BASE theme with THEME theme"
+    (dolist (to-disable custom-enabled-themes)
+      (disable-theme to-disable))
+    (if theme (progn
+                (load-theme base t)
+                (load-theme theme t))
+      (load-theme base t)))
+
+  (defun move-text-internal (arg)
+    "Swap the current selected text within other line ARG line up
+              (if the ARG is positive) or down (if the ARG is negative)"
+    (cond
+     ((and mark-active transient-mark-mode)
+      (if (> (point) (mark))
+          (exchange-point-and-mark))
+      (let ((column (current-column))
+            (text (delete-and-extract-region (point) (mark))))
+        (forward-line arg)
+        (move-to-column column t)
+        (set-mark (point))
+        (insert text)
+        (exchange-point-and-mark)
+        (setq deactivate-mark nil)))
+     (t (let ((column (current-column)))
+          (beginning-of-line)
+          (when (or (> arg 0) (not (bobp)))
+            (forward-line)
+            (when (or (< arg 0) (not (eobp)))
+              (transpose-lines arg))
+            (forward-line -1))
+          (move-to-column column t)))))
+
+  (defun move-text-down (arg)
+    "Call `move-text-internal' with a positive ARG value"
+    (interactive "*p")
+    (move-text-internal arg))
+
+  (defun move-text-up (arg)
+    "Call `move-text-internal' with a negative ARG value"
+    (interactive "*p")
+    (move-text-internal (- arg)))
+
+  (defun kill-direds ()
+    "Kill all buffers with dired-mode except for the current"
+    (interactive)
+    (when (string-equal "dired-mode" major-mode)
+      (let ((buffers (cdr (buffer-list))) (buffers-to-delete '()))
+        (dolist (buffer buffers)
+          (when (with-current-buffer buffer (string-equal "dired-mode" major-mode))
+            (add-to-list 'buffers-to-delete buffer)))
+        (dolist (buffer buffers-to-delete)
+          (kill-buffer buffer)))))
+
+  (defun open-terminal ()
+    "Open terminal from buffer list or a new instance"
+    (interactive)
+    (let ((height (/ (window-height) 4)))
+      (delete-other-windows)
+      (select-window (split-window-below))
+      (enlarge-window (- height))
+      (shell)))
+
+  (defun open-configuration-dir ()
+    "Open dired in the configuration directory"
+    (interactive)
+    (find-file user-emacs-directory))
+
+  (defun insert-pairs (char)
+    "Surround the region with a pair of characters. Valide pairs are defined in `insert-pair-alist'"
+    (interactive "*@cchar: ")
+    (dolist (pair insert-pair-alist)
+      (if (char-equal char (car pair))
+          (insert-pair 1 (nth 0 pair) (nth 1 pair)))))
+
+  (defun get-window-state ()
+    (if (or (use-region-p) buffer-read-only)
+        (propertize (if buffer-read-only " READONLY " " SELECT ") 'face 'selection-mode-face)
+      (propertize " INSERT " 'face 'insert-mode-face)))
+#+END_SRC
+* Customization
+** Sets
+#+begin_src emacs-lisp
+  (font "UbuntuMono" 220)
+  (set-frame-parameter nil 'alpha-background 100)
+  (setq-default
+   truncate-lines t
+   cursor-in-non-selected-windows nil
+   cursor-type '(hbar . 4)
+   tab-width 4
+   indent-tabs-mode nil
+   whitespace-style '(face tabs spaces trailing indentation empty space-mark tab-mark missin-newline-at-eof)
+
+   mode-line-format '((:eval (if (eq (get-mru-window) (selected-window))
+                                 (simple-mode-line-render
+                                  (format-mode-line '("%e" (:eval (format "%s %s %s" (get-window-state) (buffer-name) (if (and (buffer-modified-p) (not buffer-read-only)) "[+]" "")))))
+                                  (format-mode-line '((:eval (format "%s %s" (propertize (if vc-mode vc-mode "") 'face 'dired-mark) (if buffer-read-only "" "Ln %l, Col %c"))))))
+                               '(" " mode-line-buffer-identification "  " mode-line-modes mode-line-misc-info mode-line-end-spaces)))))
+
+  (setq-local local "/home/joao/.local/share/")
+  (setenv "RUSTUP_HOME" (concat local "rustup/"))
+  (setenv "CARGO_HOME" (concat (getenv "RUSTUP_HOME") "cargo/"))
+
+  (setq
+   inhibit-splash-screen t
+   inhibit-startup-message t
+   initial-scratch-message ""
+
+   diredp-hide-details-propagate-flag nil
+   diredp-hide-details-initially-flag nil
+   eldoc-echo-area-use-multiline-p nil
+   ring-bell-function 'ignore
+   make-backup-files nil
+   truncate-partial-width-windows nil
+   redisplay-dont-pause t
+   treesit-font-lock-level 4
+   kill-buffer-query-functions nil
+   compilation-scroll-output t
+   blink-cursor-mode nil
+   delete-pair-blink-delay 0
+
+   tab-bar-show nil
+   pixel-scroll-precision-large-scroll-height 40.0
+   scroll-step 1
+   scroll-margin 3
+
+   display-line-numbers-type 'relative
+   display-line-numbers-width-start 40
+
+   modus-themes-syntax '(yellow-comments green-strings alt-syntax)
+   modus-themes-italic-constructs t
+   modus-themes-bold-constructs t
+   modus-themes-mode-line '(borderless)
+   modus-themes-paren-match '(intense underline)
+   modus-themes-region '(bg-only)
+   modus-themes-vivendi-color-overrides '((bg-active . "gray20") (bg-main . "#151823"))
+   modus-themes-operandi-color-overrides '((bg-active . "gray90") (bg-main . "gray80")))
+
+
+  (setq
+   treesit-language-source-alist
+   '((bash "https://github.com/tree-sitter/tree-sitter-bash")
+     (elisp "https://github.com/Wilfred/tree-sitter-elisp")
+     (html "https://github.com/tree-sitter/tree-sitter-html")
+     (json "https://github.com/tree-sitter/tree-sitter-json")
+     (make "https://github.com/alemuller/tree-sitter-make")
+     (markdown "https://github.com/ikatyang/tree-sitter-markdown")
+     (python "https://github.com/tree-sitter/tree-sitter-python")
+     (c "https://github.com/tree-sitter/tree-sitter-c")
+     (cpp "https://github.com/tree-sitter/tree-sitter-cpp")
+     (rust "https://github.com/tree-sitter/tree-sitter-rust")
+     (java "https://github.com/tree-sitter/tree-sitter-java")
+     (javascript "https://github.com/tree-sitter/tree-sitter-javascript")
+     (zig "https://github.com/GrayJack/tree-sitter-zig")
+     (toml "https://github.com/tree-sitter/tree-sitter-toml")))
+
+  ;;  (mapc #'treesit-install-language-grammar (mapcar #'car treesit-language-source-alist))
+
+  (setq major-mode-remap-alist
+        '((bash-mode . bash-ts-mode)
+          (json-mode . json-ts-mode)
+          (c-mode . c-ts-mode)
+          (c++-mode . c++-ts-mode)
+          (java-mode . java-ts-mode)
+          (javascript-mode . js-ts-mode)
+          (rust-mode . rust-ts-mode)
+          (python-mode . python-ts-mode)))
+
+  (let ((cargo (concat (getenv "CARGO_HOME") "/bin:")))
+    (let ((path-list (list cargo)))
+      (dolist (element path-list)
+        (setenv "PATH" (concat element (getenv "PATH"))))))
+#+end_src
+** Customs
+#+begin_src emacs-lisp
+  (load-custom-theme 'modus-vivendi)
+
+  (ido-mode 1)
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (menu-bar-mode -1)
+  (scroll-bar-mode -1)
+  (fringe-mode (cons (* fringe-sides 10) (* 10 fringe-sides)))
+  (pixel-scroll-precision-mode 1)
+
+  (define-key dired-mode-map (kbd "l") (lambda () (interactive) (dired-find-file) (kill-direds)))
+  (define-key dired-mode-map  (kbd "h") (lambda () (interactive) (diredp-up-directory) (kill-direds)))
+
+  (define-key minibuffer-local-must-match-map (kbd "C-p") 'minibuffer-previous-completion)
+  (define-key minibuffer-local-must-match-map (kbd "C-n") 'minibuffer-next-completion)
+
+  (global-set-key (kbd "M-p") 'move-text-up)
+  (global-set-key (kbd "M-n") 'move-text-down)
+
+  (global-set-key (kbd "C-j") 'join-line)
+  (global-set-key (kbd "C-x C-b") 'ibuffer)
+  (global-set-key (kbd "C-x c c") 'compile)
+  (global-set-key (kbd "C-x c r") 'revert-buffer)
+  (global-set-key (kbd "C-x c s") 'insert-pairs)
+  (global-set-key (kbd "C-x c d") 'delete-pair)
+  (global-set-key (kbd "C-x c t") 'open-terminal)
+  (global-set-key (kbd "C-x c f") 'open-configuration-dir)
+
+  (global-unset-key (kbd "C-x C-p"))
+#+end_src
