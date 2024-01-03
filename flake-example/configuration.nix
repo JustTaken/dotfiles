@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, helix, ... }:
 
 {
   imports = [ ./hardware-configuration.nix ];
@@ -23,7 +23,7 @@
     extraGroups = [ "wheel" ];
     packages = with pkgs; [
       alacritty
-      helix
+      helix.packages."${pkgs.system}".helix
       brave
       hyprpaper
       git
@@ -42,7 +42,3 @@
 
   system.stateVersion = "23.05";
 }
-
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running `nixos-help`).

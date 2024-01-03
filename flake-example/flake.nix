@@ -1,26 +1,18 @@
 {
-  description = "Flakes example";
+  description = "System configuration";
 
   inputs = {
-    nixpkgs = {
-      url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    };
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
+    helix.url = "github:helix-editor/helix/master";
   };
 
-  outputs = { self, nixpkgs }: let
-    system = "x86_64-linux";
-    pkgs = import nixpkgs {inherit system;};
-  in {
-    packages.${system} = {
-      myPackage = pkgs.callPackage ./. {};
-      default = self.packages.${system}.myPackage;
-    };
-
-    devShells.${system}.default = pkgs.mkShell {
-      packages = [
-        (pkgs.callPackage ./. {})
-        pkgs.clang-tools
-      ];
+  outputs = inputs@{ self, nixpkgs, ... }: {
+    nixosConfigurations = {
+      "nixos" = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        specialArgs = inputs;
+        modules = [ ./configuration.nix ];
+      };
     };
   };
 }
