@@ -8,6 +8,7 @@
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
   programs.hyprland.enable = true;
+  programs.direnv.enable = true;
   services.getty.autologinUser = "joao";
   time.timeZone = "America/Cuiaba";
   sound.enable = true;
