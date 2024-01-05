@@ -25,6 +25,7 @@
     packages = with pkgs; [
       alacritty
       helix.packages."${pkgs.system}".helix
+      neovim
       brave
       hyprpaper
       git

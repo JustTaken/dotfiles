@@ -69,9 +69,9 @@
 "ui.cursorline" = { bg = "background_dark" }
 "ui.statusline" = { fg = "foreground", bg = "background_dark" }
 "ui.statusline.inactive" = { fg = "comment", bg = "background_dark" }
-"ui.statusline.insert" = { fg = "olive", bg = "background_dark" }
-"ui.statusline.normal" = { fg = "opal", bg = "background_dark" }
-"ui.statusline.select" = { fg = "carnation", bg = "background_dark" }
+"ui.statusline.insert" = { fg = "foreground", bg = "olive" }
+"ui.statusline.normal" = { fg = "foreground", bg = "opal" }
+"ui.statusline.select" = { fg = "foreground", bg = "carnation" }
 "ui.text" = { fg = "foreground" }
 "ui.text.focus" = { fg = "cyan" }
 "ui.window" = { fg = "foreground" }
